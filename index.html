@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beklemede Olan Bağlantılar - LinkedIn Yönetimi</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 { font-size: 28px; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 15px; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .filter-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        
+        .filter-group button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .filter-group button:hover {
+            background: #5568d3;
+        }
+        
+        .connections-list {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .connection-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .connection-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .connection-info {
+            flex: 1;
+        }
+        
+        .connection-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .connection-title {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .connection-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .connection-meta span {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .connection-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-accept {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .btn-accept:hover {
+            background: #45a049;
+        }
+        
+        .btn-message {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .btn-message:hover {
+            background: #0b7dda;
+        }
+        
+        .btn-ignore {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-ignore:hover {
+            background: #da190b;
+        }
+        
+        .btn-category {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .btn-category:hover {
+            background: #e68900;
+        }
+        
+        .category-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            background: #f0f0f0;
+            color: #333;
+            margin-top: 8px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #666;
+        }
+        
+        .bulk-actions {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .bulk-actions input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        
+        .bulk-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .bulk-accept {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .bulk-message {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .modal-content h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .modal-content textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 20px;
+            resize: vertical;
+        }
+        
+        .modal-content .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .modal-content button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .modal-content .btn-send {
+            background: #667eea;
+            color: white;
+        }
+        
+        .modal-content .btn-cancel {
+            background: #eee;
+            color: #333;
+        }
+        
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤝 Beklemede Olan Bağlantılar</h1>
+            <p>LinkedIn bağlantı isteklerini yönet ve otomatikleştir</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="value" id="totalPending">23</div>
+                <div class="label">Toplam Beklemede</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="todayPending">5</div>
+                <div class="label">Bugün Gelen</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="acceptedToday">8</div>
+                <div class="label">Bugün Kabul Edilen</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="responseRate">87%</div>
+                <div class="label">Yanıt Oranı</div>
+            </div>
+        </div>
+        
+        <div class="success-message" id="successMsg"></div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('pending')">📬 Beklemede (23)</button>
+            <button class="tab" onclick="switchTab('categorized')">📁 Kategorize Edilmiş (18)</button>
+            <button class="tab" onclick="switchTab('ignored')">🚫 Yoksayılan (7)</button>
+        </div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label>Filtreyle:</label>
+                <select onchange="filterConnections(this.value)">
+                    <option value="all">Tümü</option>
+                    <option value="today">Bugün Gelen</option>
+                    <option value="week">Bu Hafta</option>
+                    <option value="no-response">Yanıt Yok</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Sırala:</label>
+                <select onchange="sortConnections(this.value)">
+                    <option value="newest">En Yenisi Önce</option>
+                    <option value="oldest">En Eskisi Önce</option>
+                    <option value="name">Ad Sırasında</option>
+                </select>
+            </div>
+            <div class="filter-group" style="margin-left: auto;">
+                <button onclick="bulkSelectAll()">Tümünü Seç</button>
+                <button onclick="refreshList()" style="background: #2196f3;">🔄 Yenile</button>
+            </div>
+        </div>
+        
+        <div class="bulk-actions" id="bulkActions" style="display: none;">
+            <input type="checkbox" id="selectAll" onchange="toggleAllCheckboxes()">
+            <span id="selectedCount">0 seçili</span>
+            <div style="margin-left: auto; display: flex; gap: 10px;">
+                <button class="bulk-accept" onclick="bulkAccept()">✅ Tümünü Kabul Et</button>
+                <button class="bulk-message" onclick="bulkMessage()">💬 Tümüne Mesaj Gönder</button>
+            </div>
+        </div>
+        
+        <div id="pendingTab" class="tab-content active">
+            <div class="connections-list" id="connectionsList"></div>
+        </div>
+        
+        <div id="categorizedTab" class="tab-content">
+            <div class="connections-list" id="categorizedList"></div>
+        </div>
+        
+        <div id="ignoredTab" class="tab-content">
+            <div class="connections-list" id="ignoredList"></div>
+        </div>
+    </div>
+    
+    <!-- Mesaj Gönderme Modal'ı -->
+    <div class="modal" id="messageModal">
+        <div class="modal-content">
+            <h2>💬 Mesaj Gönder</h2>
+            <p id="modalPersonName" style="font-size: 14px; color: #666; margin-bottom: 15px;"></p>
+            <textarea id="messageText" placeholder="Gönderilecek mesajı yazın..."></textarea>
+            <div class="button-group">
+                <button class="btn-cancel" onclick="closeModal()">İptal</button>
+                <button class="btn-send" onclick="sendMessage()">Gönder</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Kategori Seçme Modal'ı -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content">
+            <h2>📁 Kategori Seç</h2>
+            <p id="modalCategoryName" style="font-size: 14px; color: #666; margin-bottom: 15px;"></p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn" style="background: #4caf50; color: white;" onclick="setCategory('business')">💼 İş İlişkisi</button>
+                <button class="btn" style="background: #2196f3; color: white;" onclick="setCategory('interest')">⭐ İlgi Alanı</button>
+                <button class="btn" style="background: #ff9800; color: white;" onclick="setCategory('mentor')">🎓 Mentorluk</button>
+                <button class="btn" style="background: #9c27b0; color: white;" onclick="setCategory('friend')">👫 Arkadaş</button>
+            </div>
+            <div style="margin-top: 15px;">
+                <button class="btn-cancel" onclick="closeModal()" style="width: 100%;">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock veri
+        const connections = [
+            {
+                id: 1,
+                name: "Ahmet Yılmaz",
+                title: "Yazılım Geliştirici @ TechCorp",
+                avatar: "AY",
+                date: "Bugün",
+                viewed: "Gördü",
+                mutualConnections: 5,
+                category: null
+            },
+            {
+                id: 2,
+                name: "Fatma Demir",
+                title: "Proje Yöneticisi @ Startup Inc",
+                avatar: "FD",
+                date: "Dün",
+                viewed: "Gördü",
+                mutualConnections: 3,
+                category: null
+            },
+            {
+                id: 3,
+                name: "Mehmet Şahin",
+                title: "İnsan Kaynakları Müdürü",
+                avatar: "MŞ",
+                date: "3 gün önce",
+                viewed: "Görmedi",
+                mutualConnections: 8,
+                category: null
+            },
+            {
+                id: 4,
+                name: "Zeynep Kaya",
+                title: "Pazarlama Müdürü @ Digital Agency",
+                avatar: "ZK",
+                date: "Bugün",
+                viewed: "Gördü",
+                mutualConnections: 2,
+                category: null
+            },
+            {
+                id: 5,
+                name: "Ali Öztürk",
+                title: "Senior Developer @ Google",
+                avatar: "AÖ",
+                date: "1 hafta önce",
+                viewed: "Görmedi",
+                mutualConnections: 12,
+                category: null
+            },
+            {
+                id: 6,
+                name: "Ayşe Çetin",
+                title: "İş Analisti @ Consulting",
+                avatar: "AÇ",
+                date: "2 gün önce",
+                viewed: "Gördü",
+                mutualConnections: 4,
+                category: "business"
+            },
+            {
+                id: 7,
+                name: "Kerem Güzel",
+                title: "Ürün Müdürü @ SaaS Startup",
+                avatar: "KG",
+                date: "Bugün",
+                viewed: "Gördü",
+                mutualConnections: 6,
+                category: null
+            },
+            {
+                id: 8,
+                name: "Nazlı Duman",
+                title: "Tasarımcı @ Design Studio",
+                avatar: "ND",
+                date: "4 gün önce",
+                viewed: "Görmedi",
+                mutualConnections: 1,
+                category: "interest"
+            }
+        ];
+        
+        let currentPerson = null;
+        let currentAction = null;
+        
+        function renderConnections() {
+            const list = document.getElementById('connectionsList');
+            list.innerHTML = connections
+                .filter(c => !c.category)
+                .map(conn => `
+                    <div class="connection-card">
+                        <div class="avatar">${conn.avatar}</div>
+                        <div class="connection-info" style="flex: 1;">
+                            <div class="connection-name">${conn.name}</div>
+                            <div class="connection-title">${conn.title}</div>
+                            <div class="connection-meta">
+                                <span>📅 ${conn.date}</span>
+                                <span>${conn.viewed === 'Gördü' ? '👁️' : '🔔'} ${conn.viewed}</span>
+                                <span>🔗 ${conn.mutualConnections} ortak bağlantı</span>
+                            </div>
+                        </div>
+                        <div class="connection-actions">
+                            <button class="btn btn-accept" onclick="acceptConnection(${conn.id})">✅ Kabul Et</button>
+                            <button class="btn btn-message" onclick="openMessageModal(${conn.id})">💬 Mesaj</button>
+                            <button class="btn btn-category" onclick="openCategoryModal(${conn.id})">📁 Kategori</button>
+                            <button class="btn btn-ignore" onclick="ignoreConnection(${conn.id})">🚫 Yoksay</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+        
+        function renderCategorized() {
+            const list = document.getElementById('categorizedList');
+            const categorized = connections.filter(c => c.category);
+            
+            if (categorized.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div><h3>Kategorize edilmiş bağlantı yok</h3><p>Bağlantıları kategorize etmeye başla</p></div>';
+                return;
+            }
+            
+            list.innerHTML = categorized.map(conn => {
+                const categoryLabels = {
+                    'business': '💼 İş İlişkisi',
+                    'interest': '⭐ İlgi Alanı',
+                    'mentor': '🎓 Mentorluk',
+                    'friend': '👫 Arkadaş'
+                };
+                return `
+                    <div class="connection-card">
+                        <div class="avatar">${conn.avatar}</div>
+                        <div class="connection-info" style="flex: 1;">
+                            <div class="connection-name">${conn.name}</div>
+                            <div class="connection-title">${conn.title}</div>
+                            <div class="category-tag">${categoryLabels[conn.category]}</div>
+                            <div class="connection-meta" style="margin-top: 8px;">
+                                <span>📅 ${conn.date}</span>
+                                <span>🔗 ${conn.mutualConnections} ortak bağlantı</span>
+                            </div>
+                        </div>
+                        <div class="connection-actions">
+                            <button class="btn btn-accept" onclick="acceptConnection(${conn.id})">✅ Kabul Et</button>
+                            <button class="btn btn-message" onclick="openMessageModal(${conn.id})">💬 Mesaj</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            
+            if (tabName === 'pending') {
+                document.getElementById('pendingTab').classList.add('active');
+                renderConnections();
+            } else if (tabName === 'categorized') {
+                document.getElementById('categorizedTab').classList.add('active');
+                renderCategorized();
+            }
+        }
+        
+        function acceptConnection(id) {
+            const conn = connections.find(c => c.id === id);
+            if (conn) {
+                showSuccess(`✅ ${conn.name} bağlantısı kabul edildi!`);
+                connections.splice(connections.indexOf(conn), 1);
+                renderConnections();
+            }
+        }
+        
+        function ignoreConnection(id) {
+            const conn = connections.find(c => c.id === id);
+            if (conn) {
+                showSuccess(`🚫 ${conn.name} bağlantısı yoksayıldı`);
+                connections.splice(connections.indexOf(conn), 1);
+                renderConnections();
+            }
+        }
+        
+        function openMessageModal(id) {
+            currentPerson = connections.find(c => c.id === id);
+            document.getElementById('modalPersonName').textContent = `${currentPerson.name}'a mesaj gönder`;
+            document.getElementById('messageText').value = '';
+            document.getElementById('messageModal').classList.add('active');
+        }
+        
+        function openCategoryModal(id) {
+            currentPerson = connections.find(c => c.id === id);
+            document.getElementById('modalCategoryName').textContent = `${currentPerson.name} için kategori seç`;
+            document.getElementById('categoryModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('messageModal').classList.remove('active');
+            document.getElementById('categoryModal').classList.remove('active');
+            currentPerson = null;
+        }
+        
+        function sendMessage() {
+            const text = document.getElementById('messageText').value;
+            if (!text.trim()) {
+                alert('Lütfen mesaj yazın');
+                return;
+            }
+            showSuccess(`💬 ${currentPerson.name}'a mesaj gönderildi: "${text.substring(0, 30)}..."`);
+            closeModal();
+            renderConnections();
+        }
+        
+        function setCategory(category) {
+            if (currentPerson) {
+                currentPerson.category = category;
+                const categoryLabels = {
+                    'business': 'İş İlişkisi',
+                    'interest': 'İlgi Alanı',
+                    'mentor': 'Mentorluk',
+                    'friend': 'Arkadaş'
+                };
+                showSuccess(`📁 ${currentPerson.name} "${categoryLabels[category]}" olarak kategorilendirildi`);
+                closeModal();
+                renderConnections();
+            }
+        }
+        
+        function filterConnections(value) {
+            // Filter logic
+            showSuccess('🔍 Filtre uygulandı: ' + value);
+        }
+        
+        function sortConnections(value) {
+            // Sort logic
+            showSuccess('↕️ Sıralama değiştirildi');
+        }
+        
+        function bulkSelectAll() {
+            document.getElementById('bulkActions').style.display = 'flex';
+            showSuccess('📋 Toplu işlem modu açıldı');
+        }
+        
+        function bulkAccept() {
+            showSuccess('✅ Tüm bağlantılar kabul edildi!');
+        }
+        
+        function bulkMessage() {
+            alert('Tüm seçili bağlantılara aynı mesaj gönderilecek');
+        }
+        
+        function refreshList() {
+            showSuccess('🔄 Bağlantı listesi yenilendi');
+        }
+        
+        function showSuccess(message) {
+            const msg = document.getElementById('successMsg');
+            msg.textContent = message;
+            msg.style.display = 'block';
+            setTimeout(() => {
+                msg.style.display = 'none';
+            }, 3000);
+        }
+        
+        // İlk render
+        renderConnections();
+    </script>
+</body>
+</html>
